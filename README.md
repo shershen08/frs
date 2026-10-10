@@ -1,55 +1,54 @@
 # find-relevant-skills
 
-An agent skill that scans a repo's tech stack and finds matching skills on [skills.sh](https://skills.sh).
+Finds [skills.sh](https://skills.sh) skills that match your repo's tech stack and installs the ones you approve.
 
-Point it at a repo and it will:
+## How to use
 
-1. Detect what the repo is built with, using manifest files such as `package.json`, `pom.xml` and `requirements.txt`.
-2. Search skills.sh for skills that match.
-3. Show you a shortlist.
-4. Install only the ones you approve into the repo's `.claude/skills/`.
+1. Install the skill:
+   ```bash
+   npx skills add shershen08/frs
+   ```
+2. Open your project in Claude Code and run:
+   ```
+   /find-relevant-skills
+   ```
+   or just ask: "find skills for this repo".
+3. Review the shortlist it shows you.
+4. Say which ones to install. They go into `.claude/skills/`. Nothing is installed without your OK.
 
-Nothing is installed without your confirmation. Skills are instructions that get loaded into the agent's context, so you should review them first.
+![Example: picking Postgres skills from the shortlist](example.png)
 
-## Install
+## What it detects
 
-```bash
-npx skills add shershen08/frs
-```
+It looks at manifest and config files up to 3 folders deep and skips `node_modules`, `vendor`, `dist`, `build`, `target`, virtualenvs and caches.
 
-## Usage
+| Language | Found via |
+|---|---|
+| JavaScript, TypeScript | `package.json`, `tsconfig.json` |
+| Python | `requirements.txt`, `pyproject.toml` |
+| Java, Kotlin | `pom.xml`, `build.gradle(.kts)` |
+| Go | `go.mod` |
+| Rust | `Cargo.toml` |
+| Ruby | `Gemfile` |
+| PHP | `composer.json` |
+| C# / .NET | `*.csproj` |
 
-Ask your agent something like:
+| Area | Detected |
+|---|---|
+| JS/TS frameworks | Next.js, React, React Native, Expo, Vue, Nuxt, Angular, Svelte, SvelteKit, Express, Fastify, Koa, NestJS, Electron |
+| JS/TS tooling | Tailwind CSS, Vite, Webpack, Jest, Vitest, Playwright, Cypress, Redux, Zustand, styled-components, tRPC, GraphQL, Apollo |
+| Data and services (JS) | Prisma, Drizzle, Mongoose, Supabase, Firebase, Stripe |
+| Python | Django, Flask, FastAPI, SQLAlchemy, Pydantic, Celery, pytest, NumPy, pandas, PyTorch, TensorFlow, Hugging Face Transformers, LangChain, OpenAI SDK, boto3, Poetry |
+| Java / Kotlin | Spring Boot, Spring Framework, Hibernate, JUnit, Maven, Gradle, Android |
+| Go | Gin, Echo, Gorilla Mux, Fiber, gRPC, GORM |
+| Rust | Actix Web, Axum, Tokio, Rocket |
+| Ruby | Rails, Sinatra, RSpec |
+| PHP | Laravel, Symfony |
+| .NET | ASP.NET Core |
+| Infra and CI | Docker, Docker Compose, Terraform (AWS, GCP, Azure, Kubernetes providers), Kubernetes manifests, GitHub Actions |
+| Services in Compose | Postgres, MySQL, Redis, MongoDB, RabbitMQ, Kafka, Elasticsearch |
 
-- "Find skills for this repo"
-- "Add relevant skills from skills.sh"
-- "What skills would help in this project?"
-
-If you already know which skill you want, run `npx skills add <owner/repo>` directly instead.
-
-## Slash command
-
-Once installed, the skill is available as `/find-relevant-skills`. For the shorter `/frs`, add an alias command to your project (or to `~/.claude/commands/` to have it everywhere):
-
-```bash
-mkdir -p .claude/commands && cp /path/to/frs/.claude/commands/frs.md .claude/commands/
-```
-
-The skills CLI installs only skills, so this file has to be copied by hand.
-
-## Layout
-
-```
-SKILL.md                 skill definition and workflow
-.claude/commands/frs.md  optional /frs alias
-scripts/detect_stack.py  stack detector, prints JSON search terms
-```
-
-You can run the detector on its own:
-
-```bash
-python3 scripts/detect_stack.py /path/to/repo
-```
+Anything not listed is not detected. It won't find Swift, Elixir, Dart/Flutter, Scala, C/C++, or other stacks.
 
 ## Requirements
 
@@ -57,8 +56,16 @@ python3 scripts/detect_stack.py /path/to/repo
 - Python 3, for the stack detector
 - Network access to skills.sh
 
+## Shortcuts
+
+Want the short `/frs` command? Copy the alias into your project:
+
+```bash
+mkdir -p .claude/commands && cp /path/to/frs/.claude/commands/frs.md .claude/commands/
+```
+
 ## Alternatives
 
-- `npx skills find <query>` searches skills.sh straight from the CLI, for example `npx skills find react`. You pick the query yourself, and nothing scans your repo.
+- `npx skills find <query>` searches skills.sh from the CLI. You pick the query yourself, and nothing scans your repo.
 - Browse [skills.sh](https://skills.sh) by hand and install with `npx skills add <owner/repo>`.
 - The `find-skills` skill from [vercel-labs/skills](https://github.com/vercel-labs/skills) helps your agent discover skills for a task you describe. It doesn't read your repo's manifests.
